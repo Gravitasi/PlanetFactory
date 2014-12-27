@@ -5,7 +5,6 @@ using System.Linq;
 using System.Xml.Serialization;
 using UnityEngine;
 
-// Test.
 namespace PlanetFactory
 {
     public partial class PlanetFactory : MonoBehaviour
@@ -550,7 +549,7 @@ namespace PlanetFactory
 
 
                     LoadCB(body.celestialBody);
-
+                    LoadScienceValues(body.celestialBody);
 
                     body.children.Clear();
                     parentBody.children.Add(body);
@@ -716,6 +715,21 @@ namespace PlanetFactory
             return new Orbit(inc, ecc, sma, lan, aop, mae, epo, PFUtil.FindCB(refBody));
         }
 
+        public static CelestialBodyScienceParams ParseScienceValues(ConfigNode node)
+        {
+            CelestialBodyScienceParams sciparam = new CelestialBodyScienceParams();
+            sciparam.flyingAltitudeThreshold = float.Parse(node.GetValue("flyingAltitudeThreshold"));
+            sciparam.FlyingHighDataValue = float.Parse(node.GetValue("FlyingHighDataValue"));
+            sciparam.FlyingLowDataValue = float.Parse(node.GetValue("FlyingLowDataValue"));
+            sciparam.InSpaceHighDataValue = float.Parse(node.GetValue("InSpaceHighDataValue"));
+            sciparam.InSpaceLowDataValue = float.Parse(node.GetValue("InSpaceLowDataValue"));
+            sciparam.LandedDataValue = float.Parse(node.GetValue("LandedDataValue"));
+            sciparam.RecoveryValue = float.Parse(node.GetValue("RecoveryValue"));
+            sciparam.spaceAltitudeThreshold = float.Parse(node.GetValue("spaceAltitudeThreshold"));
+            sciparam.SplashedDataValue = float.Parse(node.GetValue("SplashedDataValue"));
+            return sciparam;
+        }
+
         public static AnimationCurve ParseCurve(ConfigNode node)
         {
             var values = node.GetValues("key");
@@ -734,15 +748,15 @@ namespace PlanetFactory
         public static void LoadConfiguration(System.Object obj, ConfigNode node)
         {
             var t = obj.GetType();
- 
+
             var config = ConfigToDict(node);
             foreach (var key in config.Keys)
             {
                 var field = t.GetField(key);
-                //print(field);
+
                 if(field!=null)
                 {
-                    //print(field.FieldType.ToString().ToLower() +" Was "+field.GetValue(obj));
+                    PFUtil.Log(field.FieldType.ToString().ToLower() + " Was " + field.GetValue(obj));
                     switch(field.FieldType.ToString().ToLower())
                     {
                         case "system.string":
@@ -841,7 +855,6 @@ namespace PlanetFactory
                             }
                             break;
 
-
                     }
                    
                 }
@@ -895,6 +908,20 @@ namespace PlanetFactory
                     orbit.argumentOfPeriapsis, orbit.meanAnomalyAtEpoch, orbit.epoch,body.orbit.referenceBody);// parentBody);
 
                 body.orbitDriver.UpdateOrbit();
+            }
+        }
+        public static void LoadScienceValues(CelestialBody body, ConfigNode root = null)
+        {
+            if (root == null)
+                root = ConfigNode.Load(CurrentPath + body.bodyName + ".cfg");
+            if (root != null)
+            {
+                var svConfig = root.nodes.GetNode("ScienceValues");
+                if (svConfig != null)
+                {
+                    PFUtil.Log("loading science values config:" + body.bodyName);
+                    body.scienceValues = ParseScienceValues(svConfig);
+                }
             }
         }
         //PQSMod_MaterialSetDirection.target

@@ -262,6 +262,7 @@ namespace PlanetFactory
                         {
                             PlanetFactory.LoadCB(cb);
                             PlanetFactory.LoadOrbit(cb);
+                            PlanetFactory.LoadScienceValues(cb);
                         }
                         PlanetFactory.SetPathFor(null);
                     }

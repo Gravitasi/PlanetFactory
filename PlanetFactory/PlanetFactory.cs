@@ -547,9 +547,9 @@ namespace PlanetFactory
                         body.celestialBody.orbitDriver.UpdateOrbit();
                     }
 
-
                     LoadCB(body.celestialBody);
                     LoadScienceValues(body.celestialBody);
+                    LoadOrbitColor(body.celestialBody);
 
                     body.children.Clear();
                     parentBody.children.Add(body);
@@ -622,6 +622,11 @@ namespace PlanetFactory
                             mr.mesh = mr.sharedMesh = null;
                         //mr.active = false;
                     }
+
+                    // Hacky; orbit coloring works if I put it here.
+                    var celbody = PFUtil.FindCB(name);
+                    if (celbody)
+                        LoadOrbitColor(celbody);
                 }
                 finally
                 {
@@ -756,7 +761,7 @@ namespace PlanetFactory
 
                 if(field!=null)
                 {
-                    PFUtil.Log(field.FieldType.ToString().ToLower() + " Was " + field.GetValue(obj));
+                    //PFUtil.Log(field.FieldType.ToString().ToLower() + " Was " + field.GetValue(obj));
                     switch(field.FieldType.ToString().ToLower())
                     {
                         case "system.string":
@@ -908,6 +913,30 @@ namespace PlanetFactory
                     orbit.argumentOfPeriapsis, orbit.meanAnomalyAtEpoch, orbit.epoch,body.orbit.referenceBody);// parentBody);
 
                 body.orbitDriver.UpdateOrbit();
+            }
+        }
+        public static void LoadOrbitColor(CelestialBody body, ConfigNode root = null)
+        {
+
+            if (root == null)
+                root = ConfigNode.Load(CurrentPath + body.bodyName + ".cfg");
+            if (root != null)
+            {
+                var orbitConfig = root.nodes.GetNode("Orbit");
+                if (orbitConfig != null)
+                {
+                    var colorConfig = orbitConfig.GetValue("color");
+                    if (colorConfig != null)
+                    {
+                        Color color = ConfigNode.ParseColor(colorConfig);
+                        if (color != null)
+                        {
+                            PFUtil.Log("loading orbit color config:" + body.bodyName);
+                            body.orbitDriver.orbitColor = color;
+                            body.orbitDriver.UpdateOrbit();
+                        }
+                    }
+                }
             }
         }
         public static void LoadScienceValues(CelestialBody body, ConfigNode root = null)

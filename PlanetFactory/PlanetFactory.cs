@@ -549,7 +549,6 @@ namespace PlanetFactory
 
                     LoadCB(body.celestialBody);
                     LoadScienceValues(body.celestialBody);
-                    LoadOrbitColor(body.celestialBody);
 
                     body.children.Clear();
                     parentBody.children.Add(body);
@@ -610,6 +609,9 @@ namespace PlanetFactory
 
                     LoadScaledPlanet(smallPlanet, name);
 
+                    // Hacky; orbit coloring works if I put it here.
+                    LoadOrbitColor(PFUtil.FindCB(name));
+
                     if (hideScaled)//doesnt work. 
                     {
                         var bigPlanet = PFUtil.FindLocal(name);
@@ -622,11 +624,6 @@ namespace PlanetFactory
                             mr.mesh = mr.sharedMesh = null;
                         //mr.active = false;
                     }
-
-                    // Hacky; orbit coloring works if I put it here.
-                    var celbody = PFUtil.FindCB(name);
-                    if (celbody)
-                        LoadOrbitColor(celbody);
                 }
                 finally
                 {
@@ -931,9 +928,14 @@ namespace PlanetFactory
                         Color color = ConfigNode.ParseColor(colorConfig);
                         if (color != null)
                         {
-                            PFUtil.Log("loading orbit color config:" + body.bodyName);
-                            body.orbitDriver.orbitColor = color;
-                            body.orbitDriver.UpdateOrbit();
+                            PFUtil.Log(body.orbitDriver.ToString());
+                            if (body.orbitDriver != null)
+                            {
+                                PFUtil.Log("loading orbit color config:" + body.bodyName);
+                                body.orbitDriver.orbitColor = color;
+                                //PFUtil.Log(body.orbitDriver.orbitColor.ToString());
+                                body.orbitDriver.UpdateOrbit();
+                            }
                         }
                     }
                 }
